@@ -9,15 +9,18 @@ Once the plugin is installed, you will need to configure a few things.
   - This is inside your account settings
 - Then You need your Tracker Project ID
   - This can be found at the url of your tracker project.
-- Finally you need to specify a folder location for the stories to be pulled to
+- Finally you need to specify a folder location for the stories to be pulled to.
 
 ## How to use
-
 - Enter settings within the plugin.
-- 
+- Click the Pull Tracker Stories Ribbon OR click on the command for pulling the stories.
+- Enjoy!
+
+## Cloning this Project
 - Clone this repo.
 - `npm i` or `yarn` to install dependencies
 - `npm run dev` to start compilation in watch mode.
+- `npm run build` to compile for the plugin. It'll generate the main.js
 
 ## Manually installing the plugin
 
