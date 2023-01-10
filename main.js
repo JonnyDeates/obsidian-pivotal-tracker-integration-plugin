@@ -28,7 +28,7 @@ __export(main_exports, {
   retrieveStories: () => retrieveStories
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 
 // src/mappers/storyMapper.ts
 function mapStory(data) {
@@ -142,6 +142,29 @@ async function generateMarkdown(folderPath, stories) {
   new import_obsidian2.Notice(`${storiesCreated} ${storiesCreated > 1 ? "Stories" : "Story"} Created`);
 }
 
+// src/generateFilePath.ts
+var import_obsidian3 = require("obsidian");
+async function generateFilePath(folderPath) {
+  let currentFolderPath = "";
+  if (!await this.app.vault.adapter.exists(folderPath)) {
+    let path = folderPath.split("/");
+    if (path[0] === ".") {
+      path = path.slice(1);
+    }
+    for (let folder of path) {
+      if (folder.trim()) {
+        currentFolderPath += folder;
+        if (!await this.app.vault.exists(currentFolderPath)) {
+          await this.app.vault.createFolder(currentFolderPath);
+        }
+        currentFolderPath += "/";
+      }
+    }
+    new import_obsidian3.Notice("Folders Created For Story Output");
+  }
+  return currentFolderPath;
+}
+
 // main.ts
 var DEFAULT_SETTINGS = {
   folderPath: "./stories",
@@ -156,20 +179,21 @@ var retrieveStories = async (settings) => {
   const { trackerUserAPIToken, trackerAppId, folderPath, onlyPointedStories, includeStories, includeChores, includeBugs } = settings;
   const inclusion = { includeStories, includeChores, includeBugs, pointed: onlyPointedStories };
   const stories = await getStories(trackerAppId, trackerUserAPIToken, inclusion);
-  await generateMarkdown(folderPath, stories);
+  const newFolderPath = await generateFilePath(folderPath);
+  await generateMarkdown(newFolderPath, stories);
 };
 var pullTrackerStories = (settings) => {
   if (settings.trackerAppId === "") {
-    return new import_obsidian3.Notice("No APP ID Provided.");
+    return new import_obsidian4.Notice("No APP ID Provided.");
   }
   if (settings.trackerUserAPIToken === "") {
-    return new import_obsidian3.Notice("No API Token provided.");
+    return new import_obsidian4.Notice("No API Token provided.");
   }
   retrieveStories(settings).catch((e) => {
-    new import_obsidian3.Notice(e);
+    new import_obsidian4.Notice(e);
   });
 };
-var MyPlugin = class extends import_obsidian3.Plugin {
+var MyPlugin = class extends import_obsidian4.Plugin {
   async onload() {
     await this.loadSettings();
     this.addRibbonIcon("book-open", "Pull Tracker Stories", () => pullTrackerStories(this.settings));
@@ -187,7 +211,7 @@ var MyPlugin = class extends import_obsidian3.Plugin {
     await this.saveData(this.settings);
   }
 };
-var TrackerIntegrationSettingTab = class extends import_obsidian3.PluginSettingTab {
+var TrackerIntegrationSettingTab = class extends import_obsidian4.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -196,31 +220,31 @@ var TrackerIntegrationSettingTab = class extends import_obsidian3.PluginSettingT
     const { containerEl } = this;
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Tracker Integration" });
-    new import_obsidian3.Setting(containerEl).setName("Tracker User Token").setDesc('To retrieve this, it can be found in your profile settings under "API KEY"').addText((text) => text.setPlaceholder("Enter your API Key").setValue(this.plugin.settings.trackerUserAPIToken).onChange(async (value) => {
+    new import_obsidian4.Setting(containerEl).setName("Tracker User Token").setDesc('To retrieve this, it can be found in your profile settings under "API KEY"').addText((text) => text.setPlaceholder("Enter your API Key").setValue(this.plugin.settings.trackerUserAPIToken).onChange(async (value) => {
       this.plugin.settings.trackerUserAPIToken = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian3.Setting(containerEl).setName("Tracker App ID").setDesc("This can be found in the project url bar https://www.pivotaltracker.com/n/projects/<your_project_id>").addText((text) => text.setPlaceholder("Enter your Apps Id").setValue(this.plugin.settings.trackerAppId).onChange(async (value) => {
+    new import_obsidian4.Setting(containerEl).setName("Tracker App ID").setDesc("This can be found in the project url bar https://www.pivotaltracker.com/n/projects/<your_project_id>").addText((text) => text.setPlaceholder("Enter your Apps Id").setValue(this.plugin.settings.trackerAppId).onChange(async (value) => {
       this.plugin.settings.trackerAppId = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian3.Setting(containerEl).setName("Folder Path").setDesc("This is the folder path to dump the stories it, currently they do NOT get created automatically.").addText((text) => text.setPlaceholder("./Path/Name").setValue(this.plugin.settings.folderPath).onChange(async (value) => {
+    new import_obsidian4.Setting(containerEl).setName("Folder Path").setDesc("This is the folder path to dump the stories it. It will create the folder path for you.").addText((text) => text.setPlaceholder("./Path/Name").setValue(this.plugin.settings.folderPath).onChange(async (value) => {
       this.plugin.settings.folderPath = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian3.Setting(containerEl).setName("Only Pointed Stories").setDesc("Should only grab pointed stories if it is on.").addToggle((ev) => ev.setValue(this.plugin.settings.onlyPointedStories).onChange(async (value) => {
+    new import_obsidian4.Setting(containerEl).setName("Only Pointed Stories").setDesc("Should only grab pointed stories if it is on.").addToggle((ev) => ev.setValue(this.plugin.settings.onlyPointedStories).onChange(async (value) => {
       this.plugin.settings.onlyPointedStories = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian3.Setting(containerEl).setName("Include Stories").setDesc("Should include stories if it is on.").addToggle((ev) => ev.setValue(this.plugin.settings.includeStories).onChange(async (value) => {
+    new import_obsidian4.Setting(containerEl).setName("Include Stories").setDesc("Should include stories if it is on.").addToggle((ev) => ev.setValue(this.plugin.settings.includeStories).onChange(async (value) => {
       this.plugin.settings.includeStories = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian3.Setting(containerEl).setName("Include Chores").setDesc("Should include chores if it is on.").addToggle((ev) => ev.setValue(this.plugin.settings.includeChores).onChange(async (value) => {
+    new import_obsidian4.Setting(containerEl).setName("Include Chores").setDesc("Should include chores if it is on.").addToggle((ev) => ev.setValue(this.plugin.settings.includeChores).onChange(async (value) => {
       this.plugin.settings.includeChores = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian3.Setting(containerEl).setName("Include Bugs").setDesc("Should include bugs if it is on.").addToggle((ev) => ev.setValue(this.plugin.settings.includeBugs).onChange(async (value) => {
+    new import_obsidian4.Setting(containerEl).setName("Include Bugs").setDesc("Should include bugs if it is on.").addToggle((ev) => ev.setValue(this.plugin.settings.includeBugs).onChange(async (value) => {
       this.plugin.settings.includeBugs = value;
       await this.plugin.saveSettings();
     }));

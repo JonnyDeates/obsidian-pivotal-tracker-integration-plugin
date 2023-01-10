@@ -1,6 +1,7 @@
 import {App, Notice, Plugin, PluginSettingTab, Setting} from 'obsidian';
 import getStories from "./src/apiClient";
 import generateMarkdown from "./src/generateMarkdown";
+import generateFilePath from "./src/generateFilePath";
 
 interface PivotalTrackerIntegrationSettings {
 	folderPath: string;
@@ -27,7 +28,8 @@ export const retrieveStories = async (settings: PivotalTrackerIntegrationSetting
 	const inclusion = {includeStories, includeChores, includeBugs, pointed: onlyPointedStories};
 	const stories = await getStories(trackerAppId, trackerUserAPIToken, inclusion);
 
-	await generateMarkdown(folderPath, stories);
+	const newFolderPath = await generateFilePath(folderPath);
+	await generateMarkdown(newFolderPath, stories);
 };
 
 const pullTrackerStories = (settings: PivotalTrackerIntegrationSettings) => {
@@ -121,7 +123,7 @@ class TrackerIntegrationSettingTab extends PluginSettingTab {
 				}));
 		new Setting(containerEl)
 			.setName('Folder Path')
-			.setDesc('This is the folder path to dump the stories it, currently they do NOT get created automatically.')
+			.setDesc('This is the folder path to dump the stories it. It will create the folder path for you.')
 			.addText(text => text
 				.setPlaceholder('./Path/Name')
 				.setValue(this.plugin.settings.folderPath)

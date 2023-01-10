@@ -12,7 +12,7 @@ function generateConfig(
 
   return {
     method: 'GET',
-    url: `${TRACKER_URL}/projects/${projectId}/stories?$nram}`,
+    url: `${TRACKER_URL}/projects/${projectId}/stories?${queryParam}`,
     headers: {
       'X-TrackerToken': trackerToken,
     },
