@@ -1,10 +1,10 @@
 {
 	"id": "obsidian-pivotal-tracker-integration-plugin",
 	"name": "Pivotal Tracker Integration",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "This is an unofficial pivotal tracker integration plugin for Obsidian. This plugin allows the user to pull stories, chores, bugs from their pivotal counterpart.",
-	"author": "Obsidian",
+	"author": "Jon Deates",
 	"authorUrl": "https://github.com/JonnyDeates",
 	"fundingUrl": "https://www.buymeacoffee.com/jondeates",
 	"isDesktopOnly": false

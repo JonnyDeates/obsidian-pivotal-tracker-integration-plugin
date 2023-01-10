@@ -35,15 +35,22 @@ function generateTags(type: "feature" | "bug" | "chore"){
 
 }
 
-export default function generateMarkdown(folderPath: string, stories: Story[]) {
-  stories.forEach(async (feature) => {
-      await writeOutputToFile(folderPath, appendLine(storyToMarkdown(feature), ''), feature.name)
-          .then(() => {
-            new Notice(`${feature.name} Created`)
-          })
-          .catch(()=>{});
-  });
+export default async function generateMarkdown(folderPath: string, stories: Story[]) {
+  let storiesIgnored = 0;
+  for (let feature of stories) {
+    await writeOutputToFile(folderPath, appendLine(storyToMarkdown(feature), ''), feature.name)
+        .then(() => {
+          new Notice(`${feature.name} Created`)
+        })
+        .catch(() => {
+          storiesIgnored += 1;
+        });
+  }
+  if(storiesIgnored === stories.length) {
+    return new Notice('All Stories Ignored, Files Already Exist')
 
-  new Notice('Stories Created')
+  }
+  const storiesCreated = stories.length - storiesIgnored;
 
+  new Notice(`${storiesCreated} ${storiesCreated > 1 ? 'Stories' : 'Story'} Created`)
 }

@@ -78,7 +78,11 @@ async function getStories(trackerId, trackerToken, included) {
       let startedBugs = JSON.parse(await (0, import_obsidian.request)(generateConfig(trackerToken, projectId, "with_story_type=bug&with_state=started")));
       response.push(...unstartedBugs, ...startedBugs);
     }
+    if (response.length === 0) {
+      throw new Error("No stories available");
+    }
     let stories = mapStories(response);
+    new import_obsidian.Notice("Retrieving Stories");
     return stories.filter((story) => {
       const onlyNonAccepted = story.state !== "accepted";
       if (included.pointed) {
@@ -122,99 +126,65 @@ function appendLine(content, destination) {
 function generateTags(type) {
   return newLine("") + newLine("---") + newLine("tags") + newLine("  - pivotal-tracker") + newLine("  - " + type) + newLine("---");
 }
-function generateMarkdown(folderPath, stories) {
-  stories.forEach(async (feature) => {
+async function generateMarkdown(folderPath, stories) {
+  let storiesIgnored = 0;
+  for (let feature of stories) {
     await writeOutputToFile(folderPath, appendLine(storyToMarkdown(feature), ""), feature.name).then(() => {
       new import_obsidian2.Notice(`${feature.name} Created`);
     }).catch(() => {
+      storiesIgnored += 1;
     });
-  });
-  new import_obsidian2.Notice("Stories Created");
+  }
+  if (storiesIgnored === stories.length) {
+    return new import_obsidian2.Notice("All Stories Ignored, Files Already Exist");
+  }
+  const storiesCreated = stories.length - storiesIgnored;
+  new import_obsidian2.Notice(`${storiesCreated} ${storiesCreated > 1 ? "Stories" : "Story"} Created`);
 }
 
 // main.ts
 var DEFAULT_SETTINGS = {
   folderPath: "./stories",
+  trackerUserAPIToken: "",
+  trackerAppId: "",
   includeBugs: true,
   includeChores: true,
   includeStories: true,
-  trackerUserId: "default",
-  trackerAppId: "default",
   onlyPointedStories: false
 };
 var retrieveStories = async (settings) => {
-  const { trackerUserId, trackerAppId, folderPath, onlyPointedStories, includeStories, includeChores, includeBugs } = settings;
+  const { trackerUserAPIToken, trackerAppId, folderPath, onlyPointedStories, includeStories, includeChores, includeBugs } = settings;
   const inclusion = { includeStories, includeChores, includeBugs, pointed: onlyPointedStories };
-  const stories = await getStories(trackerAppId, trackerUserId, inclusion);
-  generateMarkdown(folderPath, stories);
+  const stories = await getStories(trackerAppId, trackerUserAPIToken, inclusion);
+  await generateMarkdown(folderPath, stories);
+};
+var pullTrackerStories = (settings) => {
+  if (settings.trackerAppId === "") {
+    return new import_obsidian3.Notice("No APP ID Provided.");
+  }
+  if (settings.trackerUserAPIToken === "") {
+    return new import_obsidian3.Notice("No API Token provided.");
+  }
+  retrieveStories(settings).catch((e) => {
+    new import_obsidian3.Notice(e);
+  });
 };
 var MyPlugin = class extends import_obsidian3.Plugin {
   async onload() {
     await this.loadSettings();
-    const ribbonIconEl = this.addRibbonIcon("book-open", "Pull Tracker Stories", (evt) => {
-      retrieveStories(this.settings).then(() => {
-        new import_obsidian3.Notice("Retrieving Stories");
-      }).catch((e) => {
-        new import_obsidian3.Notice(e + this.settings.trackerAppId + this.settings.trackerUserId);
-      });
-    });
-    ribbonIconEl.addClass("my-plugin-ribbon-class");
-    const statusBarItemEl = this.addStatusBarItem();
-    statusBarItemEl.setText("Status Bar Text");
+    this.addRibbonIcon("book-open", "Pull Tracker Stories", () => pullTrackerStories(this.settings));
     this.addCommand({
-      id: "open-sample-modal-simple",
-      name: "Open sample modal (simple)",
-      callback: () => {
-        new SampleModal(this.app).open();
-      }
-    });
-    this.addCommand({
-      id: "sample-editor-command",
-      name: "Sample editor command",
-      editorCallback: (editor, view) => {
-        console.log(editor.getSelection());
-        editor.replaceSelection("Sample Editor Command");
-      }
-    });
-    this.addCommand({
-      id: "open-sample-modal-complex",
-      name: "Open sample modal (complex)",
-      checkCallback: (checking) => {
-        const markdownView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
-        if (markdownView) {
-          if (!checking) {
-            new SampleModal(this.app).open();
-          }
-          return true;
-        }
-      }
+      id: "pivotal-tracker-retrieve-stories",
+      name: "Pull Pivotal Tracker Stories",
+      callback: () => pullTrackerStories(this.settings)
     });
     this.addSettingTab(new TrackerIntegrationSettingTab(this.app, this));
-    this.registerDomEvent(document, "click", (evt) => {
-      console.log("click", evt);
-    });
-    this.registerInterval(window.setInterval(() => console.log("setInterval"), 5 * 60 * 1e3));
-  }
-  onunload() {
   }
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
   async saveSettings() {
     await this.saveData(this.settings);
-  }
-};
-var SampleModal = class extends import_obsidian3.Modal {
-  constructor(app) {
-    super(app);
-  }
-  onOpen() {
-    const { contentEl } = this;
-    contentEl.setText("Woah!");
-  }
-  onClose() {
-    const { contentEl } = this;
-    contentEl.empty();
   }
 };
 var TrackerIntegrationSettingTab = class extends import_obsidian3.PluginSettingTab {
@@ -226,8 +196,8 @@ var TrackerIntegrationSettingTab = class extends import_obsidian3.PluginSettingT
     const { containerEl } = this;
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Tracker Integration" });
-    new import_obsidian3.Setting(containerEl).setName("Tracker User Token").setDesc('To retrieve this, it can be found in your profile settings under "API KEY"').addText((text) => text.setPlaceholder("Enter your API Key").setValue(this.plugin.settings.trackerUserId).onChange(async (value) => {
-      this.plugin.settings.trackerUserId = value;
+    new import_obsidian3.Setting(containerEl).setName("Tracker User Token").setDesc('To retrieve this, it can be found in your profile settings under "API KEY"').addText((text) => text.setPlaceholder("Enter your API Key").setValue(this.plugin.settings.trackerUserAPIToken).onChange(async (value) => {
+      this.plugin.settings.trackerUserAPIToken = value;
       await this.plugin.saveSettings();
     }));
     new import_obsidian3.Setting(containerEl).setName("Tracker App ID").setDesc("This can be found in the project url bar https://www.pivotaltracker.com/n/projects/<your_project_id>").addText((text) => text.setPlaceholder("Enter your Apps Id").setValue(this.plugin.settings.trackerAppId).onChange(async (value) => {

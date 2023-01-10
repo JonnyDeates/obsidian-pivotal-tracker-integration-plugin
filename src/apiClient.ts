@@ -1,6 +1,6 @@
 import mapStories from './mappers/storyMapper';
 import Story from './types/story';
-import {request} from "obsidian";
+import {Notice, request} from "obsidian";
 
 const TRACKER_URL = 'https://www.pivotaltracker.com/services/v5';
 
@@ -12,7 +12,7 @@ function generateConfig(
 
   return {
     method: 'GET',
-    url: `${TRACKER_URL}/projects/${projectId}/stories?${queryParam}`,
+    url: `${TRACKER_URL}/projects/${projectId}/stories?$nram}`,
     headers: {
       'X-TrackerToken': trackerToken,
     },
@@ -46,8 +46,13 @@ export default async function getStories(
       response.push(...unstartedBugs, ...startedBugs);
     }
 
+    if(response.length === 0){
+      throw new Error('No stories available')
+    }
+
     let stories = mapStories(response as any[]);
 
+    new Notice('Retrieving Stories');
 
     return stories.filter((story) => {
       const onlyNonAccepted = story.state !== 'accepted';
