@@ -161,8 +161,10 @@ async function generateFilePath(folderPath) {
       }
     }
     new import_obsidian3.Notice("Folders Created For Story Output");
+    return currentFolderPath;
+  } else {
+    return folderPath;
   }
-  return currentFolderPath;
 }
 
 // main.ts

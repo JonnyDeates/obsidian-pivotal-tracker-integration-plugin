@@ -17,6 +17,8 @@ export default async function generateFilePath(folderPath: string): Promise<stri
             }
         }
         new Notice('Folders Created For Story Output')
+        return currentFolderPath;
+    } else {
+        return folderPath;
     }
-    return currentFolderPath;
 };
