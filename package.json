@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-pivotal-tracker-integration-plugin",
+	"name": "pivotal-tracker-integration-plugin",
 	"version": "1.0.3",
 	"description": "This is an unofficial pivotal tracker integration plugin for Obsidian. (https://obsidian.md)",
 	"main": "main.js",
