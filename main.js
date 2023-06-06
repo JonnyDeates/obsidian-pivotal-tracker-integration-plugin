@@ -124,7 +124,7 @@ function appendLine(content, destination) {
   return newLine(`${destination + content}`);
 }
 function generateTags(type) {
-  return newLine("") + newLine("---") + newLine("tags") + newLine("  - pivotal-tracker") + newLine("  - " + type) + newLine("---");
+  return newLine("") + newLine("") + newLine("tags") + newLine("- #pivotal-tracker") + newLine("- #" + type) + newLine("");
 }
 async function generateMarkdown(folderPath, stories) {
   let storiesIgnored = 0;
@@ -198,7 +198,11 @@ var pullTrackerStories = (settings) => {
 var MyPlugin = class extends import_obsidian4.Plugin {
   async onload() {
     await this.loadSettings();
-    this.addRibbonIcon("book-open", "Pull Tracker Stories", () => pullTrackerStories(this.settings));
+    this.addRibbonIcon(
+      "book-open",
+      "Pull Tracker Stories",
+      () => pullTrackerStories(this.settings)
+    );
     this.addCommand({
       id: "pivotal-tracker-retrieve-stories",
       name: "Pull Pivotal Tracker Stories",

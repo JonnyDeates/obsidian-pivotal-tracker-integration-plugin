@@ -31,7 +31,7 @@ function appendLine(content: string, destination: string): string {
 
 function generateTags(type: "feature" | "bug" | "chore"){
 
-  return newLine("") + newLine("---") + newLine("tags") + newLine("  - pivotal-tracker") + newLine("  - " + type) +newLine("---")
+  return newLine("") + newLine("") + newLine("tags") + newLine("- #pivotal-tracker") + newLine("- #" + type) +newLine("")
 
 }
 
